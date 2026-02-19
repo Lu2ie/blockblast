@@ -1,78 +1,94 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Block Spiel</title>
+<title>Reaktionsspiel</title>
 <style>
-body {
-  background: black;
-  color: white;
-  text-align: center;
-}
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin-top: 100px;
+        background-color: #f0f0f0;
+    }
 
-#board {
-  display: grid;
-  grid-template-columns: repeat(8, 40px);
-  gap: 3px;
-  width: fit-content;
-  margin: 20px auto;
-}
+    #box {
+        width: 300px;
+        height: 200px;
+        margin: 30px auto;
+        background-color: red;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        cursor: pointer;
+        border-radius: 10px;
+        transition: background-color 0.2s;
+    }
 
-.cell {
-  width: 40px;
-  height: 40px;
-  background: gray;
-  cursor: pointer;
-}
+    #result {
+        font-size: 20px;
+        margin-top: 20px;
+    }
 
-.filled {
-  background: lime;
-}
-
-button {
-  margin: 5px;
-  padding: 10px;
-}
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
 </style>
 </head>
 <body>
 
-<h2>Mini Block Spiel</h2>
+<h1>Reaktionsspiel</h1>
+<p>Klicke auf "Start" und warte bis das Feld grün wird!</p>
 
-<div id="board"></div>
+<button onclick="startGame()">Start</button>
 
-<button onclick="block=1">1er Block</button>
-<button onclick="block=2">2er Block</button>
-<button onclick="block=3">3er Block</button>
+<div id="box">Warte...</div>
+
+<div id="result"></div>
 
 <script>
-let block = 1;
-let board = document.getElementById("board");
+let startTime;
+let timeout;
+let gameActive = false;
 
-// Spielfeld erstellen
-for (let i = 0; i < 64; i++) {
-  let div = document.createElement("div");
-  div.className = "cell";
-  div.onclick = function() {
-    place(i);
-  };
-  board.appendChild(div);
+function startGame() {
+    const box = document.getElementById("box");
+    const result = document.getElementById("result");
+
+    result.textContent = "";
+    box.style.backgroundColor = "red";
+    box.textContent = "Warte...";
+    gameActive = false;
+
+    const randomDelay = Math.random() * 3000 + 2000; // 2–5 Sekunden
+
+    timeout = setTimeout(() => {
+        box.style.backgroundColor = "green";
+        box.textContent = "JETZT KLICKEN!";
+        startTime = new Date().getTime();
+        gameActive = true;
+    }, randomDelay);
 }
 
-function place(index) {
-  let cells = document.getElementsByClassName("cell");
-  let col = index % 8;
+document.getElementById("box").addEventListener("click", function() {
+    const box = document.getElementById("box");
+    const result = document.getElementById("result");
 
-  if (col + block > 8) return;
+    if (!gameActive) {
+        clearTimeout(timeout);
+        result.textContent = "Zu früh! 😅 Versuch es nochmal.";
+        box.textContent = "Zu früh!";
+        return;
+    }
 
-  for (let i = 0; i < block; i++) {
-    if (cells[index + i].classList.contains("filled")) return;
-  }
-
-  for (let i = 0; i < block; i++) {
-    cells[index + i].classList.add("filled");
-  }
-}
+    const reactionTime = new Date().getTime() - startTime;
+    result.textContent = "Deine Reaktionszeit: " + reactionTime + " ms";
+    box.textContent = "Gut gemacht!";
+    gameActive = false;
+});
 </script>
 
 </body>
