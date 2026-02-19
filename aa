@@ -1,95 +1,449 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<title>Reaktionsspiel</title>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        text-align: center;
-        margin-top: 100px;
-        background-color: #f0f0f0;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Blast</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    #box {
-        width: 300px;
-        height: 200px;
-        margin: 30px auto;
-        background-color: red;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        cursor: pointer;
-        border-radius: 10px;
-        transition: background-color 0.2s;
-    }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Arial, sans-serif;
+        }
 
-    #result {
-        font-size: 20px;
-        margin-top: 20px;
-    }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
 
-    button {
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-</style>
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        .score-item {
+            background: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(6, 60px);
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            justify-content: center;
+        }
+
+        .grid-cell {
+            width: 60px;
+            height: 60px;
+            background: #e0e0e0;
+            border: 2px solid #999;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .grid-cell:hover {
+            transform: scale(1.05);
+            background: #d0d0d0;
+        }
+
+        .grid-cell.filled {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: 2px solid #764ba2;
+        }
+
+        .grid-cell.selected {
+            background: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+
+        .block-selector {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+
+        .block-selector h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .next-blocks {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .next-block {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .game-over {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .game-over.show {
+            display: block;
+        }
+
+        .game-over h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .game-over p {
+            color: #666;
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+    </style>
 </head>
 <body>
+    <div class="overlay" id="overlay"></div>
+    
+    <div class="container">
+        <h1>🎮 Block Blast</h1>
+        
+        <div class="score-board">
+            <div class="score-item">
+                Score: <span id="score">0</span>
+            </div>
+            <div class="score-item">
+                Level: <span id="level">1</span>
+            </div>
+            <div class="score-item">
+                Moves: <span id="moves">0</span>
+            </div>
+        </div>
 
-<h1>Reaktionsspiel</h1>
-<p>Klicke auf "Start" und warte bis das Feld grün wird!</p>
+        <div class="game-board" id="gameBoard"></div>
 
-<button onclick="startGame()">Start</button>
+        <div class="block-selector">
+            <h3>Nächste Blöcke:</h3>
+            <div class="next-blocks" id="nextBlocks"></div>
+        </div>
 
-<div id="box">Warte...</div>
+        <div class="controls">
+            <button class="btn-primary" onclick="game.newGame()">Neues Spiel</button>
+            <button class="btn-primary" onclick="game.undo()">Rückgängig</button>
+            <button class="btn-danger" onclick="game.clearSelected()">Löschen</button>
+        </div>
+    </div>
 
-<div id="result"></div>
+    <div class="game-over" id="gameOverModal">
+        <h2>Spiel Vorbei!</h2>
+        <p>Dein Endstand: <strong id="finalScore">0</strong></p>
+        <button class="btn-primary" onclick="game.newGame()">Nochmal spielen</button>
+    </div>
 
-<script>
-let startTime;
-let timeout;
-let gameActive = false;
+    <script>
+        class BlockBlast {
+            constructor() {
+                this.gridSize = 6;
+                this.grid = [];
+                this.score = 0;
+                this.level = 1;
+                this.moves = 0;
+                this.history = [];
+                this.nextBlocks = [];
+                this.selectedCells = [];
+                this.colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F'];
+                this.init();
+            }
 
-function startGame() {
-    const box = document.getElementById("box");
-    const result = document.getElementById("result");
+            init() {
+                this.grid = Array(this.gridSize * this.gridSize).fill(0);
+                this.history = [];
+                this.selectedCells = [];
+                this.score = 0;
+                this.level = 1;
+                this.moves = 0;
+                this.generateNextBlocks();
+                this.render();
+            }
 
-    result.textContent = "";
-    box.style.backgroundColor = "red";
-    box.textContent = "Warte...";
-    gameActive = false;
+            generateNextBlocks() {
+                this.nextBlocks = [];
+                for (let i = 0; i < 3; i++) {
+                    this.nextBlocks.push(Math.floor(Math.random() * 7) + 1);
+                }
+            }
 
-    const randomDelay = Math.random() * 3000 + 2000; // 2–5 Sekunden
+            placeBlock(index, blockSize) {
+                let saved = JSON.parse(JSON.stringify(this.grid));
+                
+                if (this.grid[index] !== 0) return false;
+                
+                // Platziere Block
+                for (let i = 0; i < blockSize; i++) {
+                    if (index + i < this.grid.length) {
+                        this.grid[index + i] = blockSize;
+                    }
+                }
+                
+                if (this.isValid()) {
+                    this.history.push(saved);
+                    this.moves++;
+                    this.removeLines();
+                    this.generateNextBlocks();
+                    this.updateLevel();
+                    return true;
+                } else {
+                    this.grid = saved;
+                    return false;
+                }
+            }
 
-    timeout = setTimeout(() => {
-        box.style.backgroundColor = "green";
-        box.textContent = "JETZT KLICKEN!";
-        startTime = new Date().getTime();
-        gameActive = true;
-    }, randomDelay);
-}
+            removeLines() {
+                let rowsCleared = 0;
+                const newGrid = [...this.grid];
+                
+                // Prüfe auf volle Reihen
+                for (let row = 0; row < this.gridSize; row++) {
+                    let isFull = true;
+                    for (let col = 0; col < this.gridSize; col++) {
+                        if (newGrid[row * this.gridSize + col] === 0) {
+                            isFull = false;
+                            break;
+                        }
+                    }
+                    if (isFull) {
+                        for (let col = 0; col < this.gridSize; col++) {
+                            newGrid[row * this.gridSize + col] = 0;
+                        }
+                        rowsCleared++;
+                    }
+                }
+                
+                this.grid = newGrid;
+                this.score += rowsCleared * 100;
+            }
 
-document.getElementById("box").addEventListener("click", function() {
-    const box = document.getElementById("box");
-    const result = document.getElementById("result");
+            isValid() {
+                return !this.isGameOver();
+            }
 
-    if (!gameActive) {
-        clearTimeout(timeout);
-        result.textContent = "Zu früh! 😅 Versuch es nochmal.";
-        box.textContent = "Zu früh!";
-        return;
-    }
+            isGameOver() {
+                for (let i = 0; i < this.grid.length; i++) {
+                    if (this.grid[i] === 0) return false;
+                }
+                return true;
+            }
 
-    const reactionTime = new Date().getTime() - startTime;
-    result.textContent = "Deine Reaktionszeit: " + reactionTime + " ms";
-    box.textContent = "Gut gemacht!";
-    gameActive = false;
-});
-</script>
+            updateLevel() {
+                this.level = Math.floor(this.score / 500) + 1;
+            }
 
+            clickCell(index) {
+                if (this.grid[index] !== 0) return;
+                
+                if (this.selectedCells.includes(index)) {
+                    this.selectedCells = this.selectedCells.filter(i => i !== index);
+                } else {
+                    this.selectedCells.push(index);
+                }
+                
+                this.render();
+            }
+
+            clearSelected() {
+                this.selectedCells = [];
+                this.render();
+            }
+
+            undo() {
+                if (this.history.length > 0) {
+                    this.grid = this.history.pop();
+                    this.moves--;
+                    this.render();
+                }
+            }
+
+            newGame() {
+                document.getElementById('gameOverModal').classList.remove('show');
+                document.getElementById('overlay').classList.remove('show');
+                this.init();
+                this.render();
+            }
+
+            render() {
+                const board = document.getElementById('gameBoard');
+                board.innerHTML = '';
+                
+                for (let i = 0; i < this.grid.length; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    
+                    if (this.grid[i] !== 0) {
+                        cell.classList.add('filled');
+                        cell.textContent = this.grid[i];
+                    } else {
+                        if (this.selectedCells.includes(i)) {
+                            cell.classList.add('selected');
+                        }
+                    }
+                    
+                    cell.style.background = this.grid[i] !== 0 ? 
+                        this.colors[(this.grid[i] - 1) % this.colors.length] : 
+                        (this.selectedCells.includes(i) ? '#ffd700' : '#e0e0e0');
+                    
+                    cell.onclick = () => this.handleCellClick(i);
+                    board.appendChild(cell);
+                }
+                
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('level').textContent = this.level;
+                document.getElementById('moves').textContent = this.moves;
+                
+                this.renderNextBlocks();
+                
+                if (this.isGameOver()) {
+                    this.showGameOver();
+                }
+            }
+
+            renderNextBlocks() {
+                const nextBlocksDiv = document.getElementById('nextBlocks');
+                nextBlocksDiv.innerHTML = '';
+                
+                this.nextBlocks.forEach(size => {
+                    const block = document.createElement('div');
+                    block.className = 'next-block';
+                    block.textContent = '█'.repeat(size);
+                    block.style.color = this.colors[size % this.colors.length];
+                    nextBlocksDiv.appendChild(block);
+                });
+            }
+
+            handleCellClick(index) {
+                if (this.selectedCells.length === 0) {
+                    this.clickCell(index);
+                } else {
+                    const blockSize = this.selectedCells.length;
+                    if (this.placeBlock(index, blockSize)) {
+                        this.selectedCells = [];
+                        this.render();
+                    }
+                }
+            }
+
+            showGameOver() {
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('gameOverModal').classList.add('show');
+                document.getElementById('overlay').classList.add('show');
+            }
+        }
+
+        const game = new BlockBlast();
+    </script>
 </body>
 </html>
