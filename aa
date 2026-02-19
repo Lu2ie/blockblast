@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Block Spiel</title>
+<style>
+body {
+  background: black;
+  color: white;
+  text-align: center;
+}
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(8, 40px);
+  gap: 3px;
+  width: fit-content;
+  margin: 20px auto;
+}
+
+.cell {
+  width: 40px;
+  height: 40px;
+  background: gray;
+  cursor: pointer;
+}
+
+.filled {
+  background: lime;
+}
+
+button {
+  margin: 5px;
+  padding: 10px;
+}
+</style>
+</head>
+<body>
+
+<h2>Mini Block Spiel</h2>
+
+<div id="board"></div>
+
+<button onclick="block=1">1er Block</button>
+<button onclick="block=2">2er Block</button>
+<button onclick="block=3">3er Block</button>
+
+<script>
+let block = 1;
+let board = document.getElementById("board");
+
+// Spielfeld erstellen
+for (let i = 0; i < 64; i++) {
+  let div = document.createElement("div");
+  div.className = "cell";
+  div.onclick = function() {
+    place(i);
+  };
+  board.appendChild(div);
+}
+
+function place(index) {
+  let cells = document.getElementsByClassName("cell");
+  let col = index % 8;
+
+  if (col + block > 8) return;
+
+  for (let i = 0; i < block; i++) {
+    if (cells[index + i].classList.contains("filled")) return;
+  }
+
+  for (let i = 0; i < block; i++) {
+    cells[index + i].classList.add("filled");
+  }
+}
+</script>
+
+</body>
+</html>
